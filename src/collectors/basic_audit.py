@@ -3,8 +3,6 @@ from pathlib import Path
 
 PARENT_PATH = Path.cwd().parent.parent
 
-
-
 class LinuxAudit:
     def __init__(self):
         with open(str(PARENT_PATH / "config" / "bins.json"), "r") as f:
