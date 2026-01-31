@@ -1,0 +1,49 @@
+{
+  "CTkFont": {
+    "family": "Undefined",
+    "size": 16,
+    "weight": "normal"
+  },
+  "CTk": {
+    "fg_color": ["#0B1220", "#0B1220"]
+  },
+  "CTkFrame": {
+    "corner_radius": 6,
+    "border_width": 0,
+    "fg_color": ["#111827", "#111827"],
+    "top_fg_color": ["gray85", "gray16"],
+    "border_color": ["gray65", "gray28"]
+  },
+  "CTkLabel": {
+    "fg_color": ["transparent", "transparent"],
+    "text_color": ["#67E8F9", "#67E8F9"],
+    "corner_radius": 0
+  },
+  "CTkButton": {
+    "fg_color": ["#1E3A8A", "#1E3A8A"],
+    "hover_color": ["#22D3EE", "#22D3EE"],
+    "text_color": ["#E0F2FE", "#E0F2FE"],
+    "corner_radius": 0,
+    "border_width": 0,
+    "text_color_disabled": ["gray74", "gray60"],
+    "border_color": ["#3E454A", "#949A9F"]
+  },
+  "CTkScrollableFrame": {
+    "fg_color": ["#020617", "#020617"],
+    "label_fg_color": ["#020617", "#020617"]
+  },
+  "CTkScrollbar": {
+    "corner_radius": 1000,
+    "border_spacing": 4,
+    "fg_color": "transparent",
+    "button_color": ["gray55", "gray41"],
+    "button_hover_color": ["gray40", "gray53"]
+  },
+  "CTkProgressBar": {
+    "corner_radius": 1000,
+    "border_width": 0,
+    "fg_color": ["#939BA2", "#4A4D50"],
+    "progress_color": ["#3a7ebf", "#1f538d"],
+    "border_color": ["gray", "gray"]
+  }
+}

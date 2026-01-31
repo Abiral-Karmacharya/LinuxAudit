@@ -14,7 +14,7 @@ world_writable_check() {
 }
 
 user_detail() {
-    (hostname;uname -r) | jq -R . | jq -s .
+    jq -n --arg un "$(whoami)" --arg uid "$(id -u)" --arg gid "$(id -g)" --arg utime "$(uptime -p)" '{Username: $un, UserID: $uid, GroupID: $gid, Uptime: $utime}'
 }
 
 # Dispatch based on argument

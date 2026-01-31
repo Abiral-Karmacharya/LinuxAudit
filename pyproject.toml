@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "BlueEyedGirl"
+version = "0.1.0"
+description = "Your project description"
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "customtkinter>=5.2.2",
+    "CTkMessagebox>=2.7"
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["*"]
+
+[tool.setuptools.package-dir]
+"" = "src"
+
+[tool.setuptools.package-data]
+"*" = ["*.json", "*.sh"]
+

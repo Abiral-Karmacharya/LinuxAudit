@@ -1,9 +1,9 @@
-import subprocess, json, os
+import subprocess, json, os, platform, importlib.util, sys
 from pathlib import Path
 
-PARENT_PATH = Path.cwd().parent.parent
+PARENT_PATH = Path(__file__).resolve().parent.parent.parent
 
-class LinuxAudit:
+class BasicAudit:
     def __init__(self):
         with open(str(PARENT_PATH / "config" / "bins.json"), "r") as f:
             self.set_classfication = json.load(f)
@@ -68,23 +68,56 @@ class LinuxAudit:
     def user_details(self):
         try:
             user_detail = self.run_bash("user_detail")
-            for i in user_detail:
-                print(i)
             return user_detail
         except Exception as e:
             print(f"Error has occured {e}")
             return False
-    
+        
+    def important_check(self):
+        status = {
+            "error": [],
+            "warning": [],
+            "is_run": True
+        }
+        try: 
+            os_name = platform.system()
+            system = platform.freedesktop_os_release()['ID_LIKE']
+            python_version = sys.version_info
+            if os_name.lower() != "linux":
+                status["error"].append("Not linux")
+                status["is_run"] = False
+
+            if system.lower() not in ["arch"]:
+                status["error"].append("Linux distro not supported")
+                status["is_run"] = False
+            
+            if not python_version >= (3,10):
+                status["warning"].append(f"python version {sys.version_info.major} {sys.version_info.minor} is not compaitable")
+            
+            with open(PARENT_PATH / "requirements.txt", "r") as f:
+                requirements = f.readlines()
+                for i in requirements:
+                    package = i.split('==')[0].split('>=')[0].split('>')[0].strip()
+                    if package and not package.startswith('#'):
+                        if importlib.util.find_spec(package.replace("-","_")) is None:
+                            status["error"].append(f"Missing dependency: {package}")
+                            status["is_run"] = False
+        except Exception as e:
+            status["error"].append(e)
+
+        return status
+
     def file_system_check(self):
         try:
             list = ['suid_check', 'sgid_check', 'world_writable_check']
             for check_type in list:
                 self.calculate_binaries(check_type)
             
-            print(self.classification)
+            return self.classification
         except Exception as e:
             print(f'Error has occured: {e}')
             return False
 
-main = LinuxAudit()
-main.file_system_check()
+if __name__ == "__main__":
+    c = BasicAudit()
+    c.file_system_check()
