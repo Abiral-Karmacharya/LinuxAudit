@@ -1,8 +1,9 @@
 try:
-    import customtkinter as ctk
+    import customtkinter as ctk, os, pathlib
     from CTkMessagebox import CTkMessagebox
     from collectors.basic_audit import BasicAudit
     from pathlib import Path
+    from PIL import Image, ImageTk
 except ImportError as e:
     CTkMessagebox("Required packages are not installed")
     exit(0)
@@ -12,7 +13,6 @@ COLORS_PATH = PARENT_PATH / "config" / "colors.json"
 
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme(str(COLORS_PATH))
-
 class CreateTripleBox(ctk.CTkFrame):
     def __init__(self, master, box_values=["A", "B", "C"], **kwargs):
         super().__init__(master, fg_color="transparent", **kwargs)
@@ -31,45 +31,59 @@ class CreateTripleBox(ctk.CTkFrame):
 
 class BlueEyedGirl(ctk.CTk):
     def __init__(self):
-        super().__init__()
-        self.title("BlueEyedGirl Linux auditing system")
-        self.geometry("800x460")
-        self.grid_columnconfigure(0, weight=1)
-        
-        self.basic_audit = BasicAudit()
-        self.is_running = False
+        try:
+            super().__init__()
+            self.title("BlueEyedGirl Linux auditing system")
+            self.geometry("800x460")
+            self.grid_columnconfigure(0, weight=1)
 
-        self.font_registry = {
-            "default": ctk.CTkFont(family="undefined", size=16),
-            "title": ctk.CTkFont(family="Undefined", size=20, weight="bold"),
-            "subtitle": ctk.CTkFont(family="Undefined", size=18, weight="bold"),
-            "small": ctk.CTkFont(family="Undefined", size=13),
-            "medium": ctk.CTkFont(family="Undefined", size=15),
-            "mono": ctk.CTkFont(family="JetBrains Mono", size=14)
-        }
-        self._build_ui()
+            try:
+                icon_path = os.path.join(pathlib.Path(__file__).parent.parent.parent, "assets", "RedEyed4-glow.png")
+                img = ImageTk.PhotoImage(Image.open(icon_path))
+                self.wm_iconphoto(True, img)
+            except FileNotFoundError as e:
+                CTkMessagebox(title="Error", message=f"{e}", icon="cancel")
+
+            
+            self.basic_audit = BasicAudit()
+            self.is_running = False
+
+            self.font_registry = {
+                "default": ctk.CTkFont(family="undefined", size=16),
+                "title": ctk.CTkFont(family="Undefined", size=20, weight="bold"),
+                "subtitle": ctk.CTkFont(family="Undefined", size=18, weight="bold"),
+                "small": ctk.CTkFont(family="Undefined", size=13),
+                "medium": ctk.CTkFont(family="Undefined", size=15),
+                "mono": ctk.CTkFont(family="JetBrains Mono", size=14)
+            }
+            self._build_ui()
+        except Exception as e:
+            CTkMessagebox(title="Error", message=f"{e}", icon="cancel")
 
     def _build_ui(self):
-        self.label = ctk.CTkLabel(self, text="BlueEyedGirl", font=self.font_registry["title"], text_color="#67E8F9")
-        self.label.grid(row=0, column=0, pady=(50, 10))
+        try:
+            self.label = ctk.CTkLabel(self, text="BlueEyedGirl", font=self.font_registry["title"], text_color="#67E8F9")
+            self.label.grid(row=0, column=0, pady=(50, 10))
 
-        self.button_frame = ctk.CTkFrame(self)
-        self.button_frame.grid(row=1, column=0)
+            self.button_frame = ctk.CTkFrame(self)
+            self.button_frame.grid(row=1, column=0)
 
-        self.easy_mode = ctk.CTkButton(self.button_frame, text="Easy mode", font=self.font_registry["small"], command=self.main)
-        self.easy_mode.grid(row=1, column=0, padx=4)
+            self.easy_mode = ctk.CTkButton(self.button_frame, text="Easy mode", font=self.font_registry["small"], command=self.main)
+            self.easy_mode.grid(row=1, column=0, padx=4)
 
-        self.medium_mode = ctk.CTkButton(self.button_frame, text="Medium mode", font=self.font_registry["small"], command=self.main)
-        self.medium_mode.grid(row=1, column=1, padx=4)
+            self.medium_mode = ctk.CTkButton(self.button_frame, text="Medium mode", font=self.font_registry["small"], command=self.main)
+            self.medium_mode.grid(row=1, column=1, padx=4)
 
-        self.results_frame = ctk.CTkScrollableFrame(
-            self,
-            label_text="Audit Results",
-            label_font=self.font_registry["title"]
-        )
-        self.results_frame.grid(row=2, column=0, padx=20, pady=20,sticky='nsew')
-        self.grid_rowconfigure(2, weight=1)
-        self.results_frame.grid_remove()
+            self.results_frame = ctk.CTkScrollableFrame(
+                self,
+                label_text="Audit Results",
+                label_font=self.font_registry["title"]
+            )
+            self.results_frame.grid(row=2, column=0, padx=20, pady=20,sticky='nsew')
+            self.grid_rowconfigure(2, weight=1)
+            self.results_frame.grid_remove()
+        except Exception as e:
+            CTkMessagebox(title="Error", message=f"{e}", icon="cancel")
 
     def clear_results(self):
         try:
