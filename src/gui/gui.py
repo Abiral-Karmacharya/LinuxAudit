@@ -1,9 +1,13 @@
 try:
-    import customtkinter as ctk, os, pathlib
+    import customtkinter as ctk
     from CTkMessagebox import CTkMessagebox
     from collectors.basic_audit import BasicAudit
     from pathlib import Path
     from PIL import Image, ImageTk
+    import os
+    import pathlib
+    import threading
+    import webbrowser
 except ImportError as e:
     CTkMessagebox("Required packages are not installed")
     exit(0)
@@ -18,13 +22,27 @@ class CreateTripleBox(ctk.CTkFrame):
         super().__init__(master, fg_color="transparent", **kwargs)
         
         self.grid_columnconfigure((0, 1, 2), weight=1)
+        categories = [
+            {"title": "CRITICAL", "color": "#F87171"},    # Red
+            {"title": "SUSPICIOUS", "color": "#FB923C"}, # Orange
+            {"title": "UNKNOWN", "color": "#94A3B8"}    # Gray
+        ]
         self.labels = [] 
 
         for i in range(3):
             box = ctk.CTkFrame(self, corner_radius=5, border_width=2)
             box.grid(row=0, column=i, sticky="nsew", padx=2)
+
+            title_label = ctk.CTkLabel(
+                box, 
+                text=categories[i]["title"], 
+                font=("Arial", 12, "bold"),
+                text_color=categories[i]["color"]
+            )
+            title_label.pack(pady=(10, 0))
             
-            label = ctk.CTkLabel(box, text=box_values[i], font=("Arial", 14))
+            content_text = box_values[i] if box_values[i] else "No issues found"
+            label = ctk.CTkLabel(box, text=content_text, font=("Arial", 14), wraplength=150)
             label.pack(expand=True, pady=10)
             
             self.labels.append(label)
@@ -92,21 +110,6 @@ class BlueEyedGirl(ctk.CTk):
         except Exception as e:
             CTkMessagebox(title="Error while clearing screen", message=f"{e}", icon="cancel")
             return False
-    
-    def suid_result_display(self, result=None, pady=10, padx=10):
-        try:
-            result_card = ctk.CTkFrame(master=app, 
-                       width=200, 
-                       height=150, 
-                       corner_radius=15,
-                       border_width=2,
-                       border_color="gray")
-            result_card.pack(pady=pady, padx=padx)
-            result_card.configure((0,1,2), weight=1)
-
-            
-        except Exception as e:
-            CTkMessagebox(title="Error", message=f"{e}", icon="cancel")
 
     def result_display(self, result=None, font_size: str = "medium", title: str = None, pady=10, padx=0, fill: str = 'x'):
         try:
@@ -157,6 +160,8 @@ class BlueEyedGirl(ctk.CTk):
         except Exception as e:
             CTkMessagebox(title="Error", message=f"{e}", icon="cancel")
             return False
+        finally:
+            self.is_running = False
         
     def starter(self):
         try:
@@ -177,25 +182,42 @@ class BlueEyedGirl(ctk.CTk):
         
     def file_check(self):
         try:
-            basic_audit = BasicAudit()
-            file_check = basic_audit.file_system_check()
-            if len(file_check["suspicious"]) != 0:
-                self.after(0, self.result_display, "Suspicious bins", font_size="subtitle")
-                self.after(0, self.result_display, file_check["suspicious"], pady=0, padx=0, fill=None)
-                self.after(0, self.result_display, "You might want to check these bins and according to your needs remove suid if possible.", pady=0, padx=0, fill=None)
-            if len(file_check["critical"]) != 0:
-                self.after(0, self.result_display, "Critical bins", font_size="default")
-                self.after(0, self.result_display, file_check["critical"], pady=0, padx=0, fill=None)
-                self.after(0, self.result_display, "You have to remove suids from these bins.", pady=0, padx=0, fill=None)
+            file_results = self.basic_audit.file_system_check()
+            all_suids = file_results.get("critical", []) + file_results.get("suspicious", [])
+
+            if not all_suids:
+                self.after(0, self.result_display, "No SUID binaries found.")
+                return True
+            chunks = [all_suids[i:i + 3] for i in range(0, len(all_suids), 3)]
+
+            self.after(0, self.result_display, "SUID Binaries (Grouped)", font_size="subtitle")
+            
+            for chunk in chunks:
+                while len(chunk) < 3:
+                    chunk.append("")                
+                self.after(0, self.render_triple_box, chunk)
+            return True
         except Exception as e:
-            CTkMessagebox(title="Bash error", message=f"{e}", icon="cancel")
+            print(f"Error in file_check: {e}")
+            return False
+        
+    def render_triple_box(self, values):
+        box = CreateTripleBox(master=self.results_frame, box_values=values)
+        box.pack(fill="x", padx=10, pady=5)
+
     def main(self):
+        if self.is_running: 
+            return
+        self.is_running = True
+        audit_thread = threading.Thread(target=self.run_audit_sequence, daemon=True)
+        audit_thread.start()
+    def run_audit_sequence(self):
         try:
             app_flow= [
                 ("starter", self.starter),
                 ("pc check", self.pc_check),
                 ("user details", self.user_details),
-                ("file check", self.file_check)
+                ("file check", self.file_check),
             ]
             self.is_running = True
             for flow_name, flow_method in app_flow:
