@@ -22,7 +22,9 @@ case "$1" in
     suid_check)
         suid_check
         ;;
-    
+    sgid_check)
+        sgid_check
+        ;;
     world_writable_check)
         world_writable_check
         ;;

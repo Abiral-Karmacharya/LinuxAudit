@@ -20,33 +20,126 @@ ctk.set_default_color_theme(str(COLORS_PATH))
 class CreateTripleBox(ctk.CTkFrame):
     def __init__(self, master, box_values=["A", "B", "C"], **kwargs):
         super().__init__(master, fg_color="transparent", **kwargs)
-        
         self.grid_columnconfigure((0, 1, 2), weight=1)
+        
         categories = [
-            {"title": "CRITICAL", "color": "#F87171"},    # Red
-            {"title": "SUSPICIOUS", "color": "#FB923C"}, # Orange
-            {"title": "UNKNOWN", "color": "#94A3B8"}    # Gray
+            {"title": "critical", "color": "#F87171", "bg": "#2D1818"},      # Red with dark bg
+            {"title": "suspicious", "color": "#FB923C", "bg": "#2D2318"},   # Orange with dark bg
+            {"title": "unknown", "color": "#94A3B8", "bg": "#1E2937"}       # Gray with dark bg
         ]
-        self.labels = [] 
-
+        
+        print(box_values)
+        
         for i in range(3):
-            box = ctk.CTkFrame(self, corner_radius=5, border_width=2)
-            box.grid(row=0, column=i, sticky="nsew", padx=2)
-
+            # Main box with custom colors
+            box = ctk.CTkFrame(
+                self, 
+                corner_radius=8, 
+                border_width=2,
+                border_color=categories[i]["color"],
+                fg_color=categories[i]["bg"]
+            )
+            box.grid(row=0, column=i, sticky="nsew", padx=8, pady=8)
+            
+            category = categories[i]["title"]
+            results = box_values.get(category, [])
+            
+            # Title section with background
+            title_frame = ctk.CTkFrame(
+                box,
+                corner_radius=6,
+                fg_color=categories[i]["color"],
+                height=40
+            )
+            title_frame.pack(fill="x", padx=10, pady=(10, 5))
+            title_frame.pack_propagate(False)
+            
             title_label = ctk.CTkLabel(
-                box, 
-                text=categories[i]["title"], 
-                font=("Arial", 12, "bold"),
+                title_frame,
+                text=category.upper(),
+                font=("Arial", 14, "bold"),
+                text_color="#FFFFFF"
+            )
+            title_label.pack(expand=True)
+            
+            # Count label
+            count_label = ctk.CTkLabel(
+                box,
+                text=f"{len(results)} item(s)" if results else "",
+                font=("Arial", 10),
                 text_color=categories[i]["color"]
             )
-            title_label.pack(pady=(10, 0))
+            count_label.pack(pady=(0, 5))
             
-            content_text = box_values[i] if box_values[i] else "No issues found"
-            label = ctk.CTkLabel(box, text=content_text, font=("Arial", 14), wraplength=150)
-            label.pack(expand=True, pady=10)
-            
-            self.labels.append(label)
-
+            # Scrollable content area
+            if results:
+                # Create scrollable frame for content
+                scroll_frame = ctk.CTkScrollableFrame(
+                    box,
+                    fg_color="transparent",
+                    corner_radius=0
+                )
+                scroll_frame.pack(fill="both", expand=True, padx=10, pady=(5, 10))
+                
+                # Add each binary as a clickable button
+                for binary_path in results:
+                    binary_name = os.path.basename(binary_path)
+                    
+                    # Create a frame for each item
+                    item_frame = ctk.CTkFrame(
+                        scroll_frame,
+                        fg_color="transparent",
+                        corner_radius=4
+                    )
+                    item_frame.pack(fill="x", pady=2)
+                    
+                    # Create button for each binary
+                    binary_btn = ctk.CTkButton(
+                        item_frame,
+                        text=f"📄 {binary_name}",
+                        font=("Arial", 12),
+                        fg_color="transparent",
+                        hover_color=categories[i]["color"],
+                        text_color=categories[i]["color"],
+                        anchor="w",
+                        border_width=1,
+                        border_color=categories[i]["color"],
+                        corner_radius=4,
+                        height=32,
+                        command=lambda b=binary_name: self.open_gtfo(b)
+                    )
+                    binary_btn.pack(side="left", fill="x", expand=True)
+                    
+                    # Store full path as attribute for potential future use
+                    binary_btn.full_path = binary_path
+                    
+            else:
+                # Empty state
+                empty_frame = ctk.CTkFrame(
+                    box,
+                    fg_color="transparent"
+                )
+                empty_frame.pack(expand=True, pady=30)
+                
+                empty_icon = ctk.CTkLabel(
+                    empty_frame,
+                    text="✓",
+                    font=("Arial", 40),
+                    text_color="#4ADE80"
+                )
+                empty_icon.pack()
+                
+                empty_label = ctk.CTkLabel(
+                    empty_frame,
+                    text="No issues found",
+                    font=("Arial", 13),
+                    text_color="#94A3B8"
+                )
+                empty_label.pack(pady=(5, 0))
+    
+    def open_gtfo(self, binary):
+        url = f"https://gtfobins.github.io/gtfobins/{binary}/"
+        webbrowser.open(url)
 class BlueEyedGirl(ctk.CTk):
     def __init__(self):
         try:
@@ -113,8 +206,6 @@ class BlueEyedGirl(ctk.CTk):
 
     def result_display(self, result=None, font_size: str = "medium", title: str = None, pady=10, padx=0, fill: str = 'x'):
         try:
-            # self.results_frame.grid()
-
             result_card = ctk.CTkFrame(self.results_frame)
             result_card.pack(pady=pady, padx=padx, fill=fill)
 
@@ -183,24 +274,34 @@ class BlueEyedGirl(ctk.CTk):
     def file_check(self):
         try:
             file_results = self.basic_audit.file_system_check()
-            all_suids = file_results.get("critical", []) + file_results.get("suspicious", [])
-
+            critical_tuple = tuple(file_results.get('critical', []))
+            standard_tuple = tuple(file_results.get('standard', []))
+            unknown_tuple = tuple(file_results.get('unknown', []))
+            all_suids = {
+                "critical": critical_tuple,
+                "standard": standard_tuple,
+                "unknown": unknown_tuple
+            }
             if not all_suids:
-                self.after(0, self.result_display, "No SUID binaries found.")
+                self.after(0,self.result_display, "No suid binaries found")
                 return True
-            chunks = [all_suids[i:i + 3] for i in range(0, len(all_suids), 3)]
-
-            self.after(0, self.result_display, "SUID Binaries (Grouped)", font_size="subtitle")
-            
-            for chunk in chunks:
-                while len(chunk) < 3:
-                    chunk.append("")                
-                self.after(0, self.render_triple_box, chunk)
+            self.after(0,self.result_display, "SUID binaries (grouped)")
+            self.after(0,self.render_triple_box, all_suids)
             return True
+            
+            # all_suids = (file_results.get("critical", []) + 
+            #             file_results.get("suspicious", []) + 
+            #             file_results.get("unknown", []))
+            # if not all_suids:
+            #     self.after(0, self.result_display, "No SUID binaries found.")
+            #     return True            
+            # self.after(0, self.result_display, "SUID Binaries (Grouped)", font_size="subtitle")            
+            # self.after(0, self.render_triple_box, file_results)
+            # return True
         except Exception as e:
             print(f"Error in file_check: {e}")
             return False
-        
+
     def render_triple_box(self, values):
         box = CreateTripleBox(master=self.results_frame, box_values=values)
         box.pack(fill="x", padx=10, pady=5)
