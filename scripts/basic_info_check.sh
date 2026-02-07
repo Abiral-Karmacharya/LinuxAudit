@@ -1,5 +1,4 @@
 #!/bin/bash
-
 suid_check() {
     find / -path /proc -prune -o -path /sys -prune -o -path /dev -prune -o -type f \( -perm -04000  \) -exec ls -ld {} \; 2>/dev/null | awk '{print $NF}' | jq -R . | jq -s .
 }

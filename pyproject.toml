@@ -1,25 +1,70 @@
 [build-system]
-requires = ["setuptools>=45", "wheel"]
+requires = ["setuptools>=65", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "BlueEyedGirl"
+name = "liar-linux-audit"
 version = "0.1.0"
-description = "Your project description"
+description = "Linux auditing system for detecting privilege escalation risks and insecure configurations"
 readme = "README.md"
 requires-python = ">=3.8"
+license = { text = "MIT" }
+
+authors = [
+    { name = "Abiral Karmacharya" }
+]
+
+keywords = ["linux", "security", "audit", "privilege-escalation", "cybersecurity"]
+
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: System Administrators",
+    "Intended Audience :: Information Technology",
+    "Topic :: Security",
+    "Topic :: System :: Systems Administration",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12"
+]
+
 dependencies = [
     "customtkinter>=5.2.2",
-    "CTkMessagebox>=2.7"
+    "CTkMessagebox>=2.7",
+    "Pillow>=9.0.0"
 ]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "black>=23.0",
+    "pylint>=2.17",
+    "flake8>=6.0"
+]
+
+[project.urls]
+Repository = "https://github.com/Abiral-Karmacharya/LinuxAudit"
+Issues = "https://github.com/Abiral-Karmacharya/LinuxAudit/issues"
+
+[project.scripts]
+liar-gui = "gui.gui:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
-include = ["*"]
-
-[tool.setuptools.package-dir]
-"" = "src"
+include = ["collectors*", "gui*"]
 
 [tool.setuptools.package-data]
-"*" = ["*.json", "*.sh"]
+"*" = ["*.json", "*.png", "*.otf", "*.sh"]
 
+[tool.black]
+line-length = 100
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]

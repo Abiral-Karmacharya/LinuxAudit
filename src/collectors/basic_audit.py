@@ -1,7 +1,26 @@
-import subprocess, json, os, platform, importlib.util, sys
-from pathlib import Path
+try:
+    import subprocess, json, os, platform, importlib.util, sys
+    from pathlib import Path
+except ImportError as e:
+    print(e)
+    exit(0)
 
-PARENT_PATH = Path(__file__).resolve().parent.parent.parent
+def _find_project_root():
+    """Find project root by looking for config directory with bins.json"""
+    current = Path(__file__).resolve()
+    
+    # First check parent directories from current file location
+    for _ in range(6):  # Check up to 6 levels up
+        if (current / "config" / "bins.json").exists():
+            return current
+        if (current / "config" / "colors.json").exists():
+            return current
+        current = current.parent
+    
+    # Fallback to default calculation
+    return Path(__file__).resolve().parent.parent.parent
+
+PARENT_PATH = _find_project_root()
 
 class BasicAudit:
     def __init__(self):

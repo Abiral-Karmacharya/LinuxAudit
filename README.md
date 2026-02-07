@@ -1,4 +1,4 @@
-# LinuxAudit
+c# LinuxAudit
 
 LinuxAudit is a JavaScript-based Linux security auditing tool focused on identifying
 privilege escalation risks and insecure filesystem configurations.
