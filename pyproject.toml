@@ -33,7 +33,8 @@ classifiers = [
 dependencies = [
     "customtkinter>=5.2.2",
     "CTkMessagebox>=2.7",
-    "Pillow>=9.0.0"
+    "Pillow>=9.0.0",
+    "rich>=14.3.0"
 ]
 
 [project.optional-dependencies]
