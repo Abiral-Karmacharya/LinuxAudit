@@ -22,11 +22,11 @@ privilege escalation risks and insecure filesystem configurations.
 - js
 
 ```bash
-sudo pacman -S js
+sudo pacman -S jq
 ```
 
 ```bash
-sudo apt install js
+sudo apt install jq
 ```
 
 ## Usage
