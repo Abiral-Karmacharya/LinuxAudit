@@ -1,0 +1,7 @@
+venv/
+__pycache__/
+*.egg-info/
+practice/
+tests/
+.pytest/ *.pyc .DS_Store .idea/ *.log
+.pytest_cache/ .vscode/ .mypy_cache/ .coverage.coverage.* htmlcov/ .hypothesis/ .pytest_cache/ .tox/ .nox/ .coverage .cache/ .pytest_cache/ .mypy_cache/ .hypothesis/
